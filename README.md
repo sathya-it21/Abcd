@@ -1,14 +1,38 @@
-{
-  "id": 0,
-  "username": "lily",
-  "email": "lily.doe@example.com",
-  "password": "secret123",
-  "phone": "1234567890",
-  "fullname": "John Doe",
-  "xp": 10,
-  "avatar_url": "https://example.com/avatar.png",
-  "created_at": null,
-  "$id": "6848724283738a87d0b6",
-  "$createdAt": "2025-06-10T17:58:26.539+00:00",
-  ...
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.hc.core5.ssl.TrustStrategy;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
+import javax.net.ssl.SSLContext;
+import java.security.cert.X509Certificate;
+
+public class UnsafeRestTemplate {
+
+    public static RestTemplate create() throws Exception {
+        // Trust all certificates
+        TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+        SSLContext sslContext = SSLContextBuilder.create()
+                .loadTrustMaterial(null, acceptingTrustStrategy)
+                .build();
+
+        // Create Apache HttpClient with the unsafe SSL context
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setSSLContext(sslContext)
+                .build();
+
+        // Use Apache HttpClient in RestTemplate
+        HttpComponentsClientHttpRequestFactory requestFactory =
+                new HttpComponentsClientHttpRequestFactory(httpClient);
+
+        return new RestTemplate(requestFactory);
+    }
 }
+
+
+<dependency>
+  <groupId>org.apache.httpcomponents.client5</groupId>
+  <artifactId>httpclient5</artifactId>
+  <version>5.3.1</version> <!-- or latest -->
+</dependency>
