@@ -1,41 +1,61 @@
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.ssl.TrustAllStrategy;
-import org.apache.hc.core5.ssl.SSLContextBuilder;
-import org.apache.hc.core5.ssl.SSLContexts;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+package com.ctrlaltdefeat.Bartr.service;
 
-import javax.net.ssl.SSLContext;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import com.ctrlaltdefeat.Bartr.model.Course;
+import com.ctrlaltdefeat.Bartr.model.User;
+import com.ctrlaltdefeat.Bartr.repository.CourseRepository;
+import com.ctrlaltdefeat.Bartr.repository.EnrollmentRepository;
+import com.ctrlaltdefeat.Bartr.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
 
-public class UnsafeRestTemplate {
+import java.util.HashMap;
+import java.util.Map;
 
-    public static RestTemplate create() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        // Create a trust-all SSL context
-        SSLContext sslContext = SSLContexts.custom()
-                .loadTrustMaterial(null, TrustAllStrategy.INSTANCE)
-                .build();
+@Service
+public class EnrollmentService {
 
-        // Build the HttpClient with this SSL context
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setSSLContext(sslContext)
-                .build();
+    private final EnrollmentRepository enrollmentRepository;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-        // Use HttpClient5's HttpComponentsClientHttpRequestFactory
-        HttpComponentsClientHttpRequestFactory factory =
-                new HttpComponentsClientHttpRequestFactory(httpClient);
+    public EnrollmentService(EnrollmentRepository enrollmentRepository,
+                             UserRepository userRepository,
+                             CourseRepository courseRepository) {
+        this.enrollmentRepository = enrollmentRepository;
+        this.userRepository = userRepository;
+        this.courseRepository = courseRepository;
+    }
 
-        return new RestTemplate(factory);
+    public String enroll(String userId, String courseId) {
+        // 1. Get user and course from Appwrite
+        User user = userRepository.getDocument(userId);
+        Course course = courseRepository.getDocument(courseId);
+
+        int userXp = user.getXp();
+        int xpCost = course.getXpCost();
+
+        if (userXp < xpCost) {
+            throw new RuntimeException("Insufficient XP to enroll in this course.");
+        }
+
+        // 2. Deduct XP from user
+        user.setXp(userXp - xpCost);
+        Map<String, Object> updatedUser = objectMapper.convertValue(user, Map.class);
+        userRepository.updateDocument(userId, updatedUser);
+
+        // 3. Credit XP to creator (instructor)
+        String creatorId = course.getCreatorId();
+        User creator = userRepository.getDocument(creatorId);
+        creator.setXp(creator.getXp() + xpCost);
+        Map<String, Object> updatedCreator = objectMapper.convertValue(creator, Map.class);
+        userRepository.updateDocument(creatorId, updatedCreator);
+
+        // 4. Create enrollment
+        Map<String, Object> enrollmentData = new HashMap<>();
+        enrollmentData.put("userId", userId);
+        enrollmentData.put("courseId", courseId);
+
+        return enrollmentRepository.createDocument(enrollmentData);
     }
 }
-
-<dependency>
-    <groupId>org.apache.httpcomponents.client5</groupId>
-    <artifactId>httpclient5</artifactId>
-    <version>5.3.1</version> <!-- Use latest -->
-</dependency>
-
