@@ -1,374 +1,249 @@
-Course model:
+Enrollment model:
 
-package com.ctrlaltdefeat.Bartr.models;
+package com.bartr.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-public class Course {
-	private String id;
-	private String title;
-	private String description;
-	private String category_id;
-	private String creator_id;
-	private Date created_at;
-	private String level;
-	
-	//Getters and Setters
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getTitle() {
-		return title;
-	}
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	public String getCategory_id() {
-		return category_id;
-	}
-	public void setCategory_id(String category_id) {
-		this.category_id = category_id;
-	}
-	public String getCreator_id() {
-		return creator_id;
-	}
-	public void setCreator_id(String creator_id) {
-		this.creator_id = creator_id;
-	}
-	public Date getCreated_at() {
-		return created_at;
-	}
-	public void setCreated_at(Date created_at) {
-		this.created_at = created_at;
-	}
-	public String getLevel() {
-		return level;
-	}
-	public void setLevel(String level) {
-		this.level = level;
-	}
-	
+@Entity
+@Table(name = "enrollment")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Enrollment {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
+
+	@ManyToOne
+    @JoinColumn(name = "courseId", nullable = false)
+	private Course course;
+
+	@ManyToOne
+    @JoinColumn(name = "learnerId", nullable = false)
+	private User learner;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "enrollmentDate")
+	private Date enrollmentDate;
+
+
+
 }
 
+Enrollment COntroller:
 
-Course controllers:
-
-package com.ctrlaltdefeat.Bartr.controllers;
+package com.bartr.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ctrlaltdefeat.Bartr.services.CourseService;
-import com.ctrlaltdefeat.Bartr.models.Course;;
+import com.bartr.model.Enrollment;
+import com.bartr.service.EnrollmentService;
+
+import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/courses")
-public class CourseController {
+@RequiredArgsConstructor
+public class EnrollmentController {
+
+    private final EnrollmentService enrollmentService;
     
-    private final CourseService courseService;
-
-   public CourseController(CourseService courseService) {
-       this.courseService = courseService;
-   }
-    @PostMapping
-    public Course createCourse(@RequestBody Course course){
-        return courseService.createCourse(course);
+    @PostMapping("/enroll")
+    public ResponseEntity<Enrollment> enroll(
+        @RequestParam int learnerId,
+        @RequestParam int courseId
+    ) {
+        return ResponseEntity.ok(enrollmentService.enrollUser(learnerId, courseId));
     }
-
 
     @GetMapping
-    public List<Course> getAllCourse() {
-        return courseService.getAllCourses();
+    public ResponseEntity<List<Enrollment>> getAllEnrollments() {
+        return ResponseEntity.ok(enrollmentService.getAllEnrollments());
     }
 
-    @GetMapping("/{id}")
-    public Course getCourseById(@PathVariable String id)  {
-        return courseService.getCourseById(id);
+    @GetMapping("/learner/{learnerId}")
+    public ResponseEntity<List<Enrollment>> getByLearner(@PathVariable int learnerId) {
+        return ResponseEntity.ok(enrollmentService.getEnrollmentsByLearner(learnerId));
     }
 
-    @PutMapping("/{id}")
-    public Course updateCourse(@PathVariable String id, @RequestBody Course course){
-        return courseService.updateCourse(id, course);
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<List<Enrollment>> getByCourse(@PathVariable int courseId) {
+        return ResponseEntity.ok(enrollmentService.getEnrollmentsByCourse(courseId));
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteCourse(@PathVariable String id) {
-        courseService.deleteCourse(id);
+    @GetMapping("/isEnrolled")
+    public ResponseEntity<Boolean> isEnrolled(
+        @RequestParam int learnerId,
+        @RequestParam int courseId
+    ) {
+        return ResponseEntity.ok(enrollmentService.isEnrolled(learnerId, courseId));
     }
+
+
 
 }
 
+Enrollment Service:
 
-Course services:
+package com.bartr.service;
 
-package com.ctrlaltdefeat.Bartr.services;
-import com.ctrlaltdefeat.Bartr.models.Course;
-import com.ctrlaltdefeat.Bartr.repository.CourseRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+
+import com.bartr.model.Enrollment;
+
+public interface EnrollmentService {
+
+    Enrollment enrollUser(int learnerId, int courseId);
+
+    List<Enrollment> getAllEnrollments();
+
+    List<Enrollment> getEnrollmentsByLearner(int learnerId);
+
+    List<Enrollment> getEnrollmentsByCourse(int courseId);
+
+    boolean isEnrolled(int learnerId, int courseId);
+}
+
+
+EnrollmentServiceImpl:
+
+package com.bartr.service.impl;
+
+import java.util.Date;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import com.bartr.model.Course;
+import com.bartr.model.Enrollment;
+import com.bartr.model.User;
+import com.bartr.repository.CourseRepository;
+import com.bartr.repository.EnrollmentRepository;
+import com.bartr.repository.UserRepository;
+import com.bartr.service.EnrollmentService;
+
+
+import lombok.RequiredArgsConstructor;
+
 @Service
-public class CourseService {
-   private final CourseRepository courseRepository;
-   private final ObjectMapper objectMapper =new ObjectMapper();
-   public CourseService(CourseRepository courseRepository) {
-       this.courseRepository = courseRepository;
-   }
-   public Course createCourse(Course course) {
-        Map<String,Object> data = objectMapper.convertValue(course, Map.class);
-       return courseRepository.createDocument(data);
-   }
-   public Course getCourseById(String id) {
-       return courseRepository.getDocument(id);
-   }
-   public List<Course> getAllCourses() {
-       return courseRepository.listDocuments();
-   }
-   public Course updateCourse(String id, Course course) {
-    Map<String,Object> data = objectMapper.convertValue(course, Map.class);
-       return courseRepository.updateDocument(id, data);
-   }
-   public void deleteCourse(String id) {
-        courseRepository.deleteDocument(id);
-   }
-}     
+@RequiredArgsConstructor
 
-Course repository:
+public class EnrollmentServiceImpl implements EnrollmentService {
 
-package com.ctrlaltdefeat.Bartr.repository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Repository;
-import org.springframework.web.client.RestTemplate;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
-import com.ctrlaltdefeat.Bartr.models.Course;
-@Repository
-public class CourseRepository extends AppwriteRestRepository<Course> {
-   @Value("${appwrite.collection.courses}")
-   private String collectionId;
-   public CourseRepository(RestTemplate restTemplate) {
-       super(restTemplate);
-   }
-   @Override
-   protected String getCollectionId() {
-       return collectionId;
-   }
+    @Override
+    public Enrollment enrollUser(int learnerId, int courseId) {
+        User learner = userRepository.findById(learnerId)
+            .orElseThrow(() -> new RuntimeException("Learner not found"));
 
-   @Override
-   protected Class<Course> getEntityClass() {
-       return Course.class;
-   }
-}
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new RuntimeException("Course not found"));
 
+        User creator = course.getCreator();
 
-AppwriteRestRepository:
+        // Check if already enrolled
+        if (enrollmentRepository.existsByLearnerAndCourse(learner, course)) {
+            throw new RuntimeException("User already enrolled in this course");
+        }
 
+        // Check XP
+        int xpCost = course.getCategory().getXpCost();
+        if (learner.getXp() < xpCost) {
+            throw new RuntimeException("Insufficient XP to enroll in this course");
+        }
 
-package com.ctrlaltdefeat.Bartr.repository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+        // Deduct from learner, add to creator
+        learner.setXp(learner.getXp() - xpCost);
+        creator.setXp(creator.getXp() + xpCost);
 
+        userRepository.save(learner);
+        userRepository.save(creator);
 
-public abstract class AppwriteRestRepository<T> {
-   protected final RestTemplate restTemplate;
-   protected final ObjectMapper objectMapper = new ObjectMapper();
-   @Value("${appwrite.endpoint}")
-   protected String baseUrl;
-   @Value("${appwrite.project.id}")
-   protected String projectId;
-   @Value("${appwrite.api.key}")
-   protected String apiKey;
-   @Value("${appwrite.database.id}")
-   protected String databaseId;
-   public AppwriteRestRepository(RestTemplate restTemplate) {
-       this.restTemplate = restTemplate;
-   }
-   protected abstract String getCollectionId();
-   protected abstract Class<T> getEntityClass();
-   public T createDocument(Map<String, Object> data) {
-       HttpHeaders headers = buildHeaders();
-       Map<String, Object> body = Map.of("documentId", "unique()", "data", data);
-       HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-       ResponseEntity<Map> response = restTemplate.postForEntity(
-               baseUrl + "/databases/" + databaseId + "/collections/" + getCollectionId() + "/documents",
-               request,
-               Map.class
-       );
-       Map<String, Object> documentData = response.getBody();
-       System.out.println(documentData);
-       documentData.keySet().removeIf(key -> key.startsWith("$"));
-       return objectMapper.convertValue(documentData, getEntityClass());
-   }
-   public T getDocument(String id) {
-       HttpHeaders headers = buildHeaders();
-       HttpEntity<Void> request = new HttpEntity<>(headers);
-       ResponseEntity<Map> response = restTemplate.exchange(
-               baseUrl + "/databases/" + databaseId + "/collections/" + getCollectionId() + "/documents/" + id,
-               HttpMethod.GET,
-               request,
-               Map.class
-       );
-       Map<String, Object> documentData = response.getBody();
-       System.out.println(documentData);
-       documentData.keySet().removeIf(key -> key.startsWith("$"));
-       return objectMapper.convertValue(documentData, getEntityClass());
-   }
-   public List<T> listDocuments() {
-       HttpHeaders headers = buildHeaders();
-       HttpEntity<Void> request = new HttpEntity<>(headers);
-       ResponseEntity<Map> response = restTemplate.exchange(
-               baseUrl + "/databases/" + databaseId + "/collections/" + getCollectionId() + "/documents",
-               HttpMethod.GET,
-               request,
-               Map.class
-       );
-       List<Map<String, Object>> documents = (List<Map<String, Object>>) response.getBody().get("documents");
-       System.out.println(documents);
+        Enrollment enrollment = Enrollment.builder()
+            .learner(learner)
+            .course(course)
+            .enrollmentDate(new Date())
+            .build();
 
-       return documents.stream()
-               .map(doc -> {
-                doc.keySet().removeIf(key -> key.startsWith("$"));
-                return objectMapper.convertValue(doc, getEntityClass());
-                })
-               .collect(Collectors.toList());
-   }
-   public T updateDocument(String id, Map<String, Object> data) {
-    try {
-        HttpHeaders headers = buildHeaders();
-        Map<String, Object> body = Map.of("data", data);
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        
-        ResponseEntity<Map> response = restTemplate.exchange(
-            baseUrl + "/databases/" + databaseId + "/collections/" + getCollectionId() + "/documents/" + id,
-            HttpMethod.PATCH,
-            request,
-            Map.class
-        );
-        
-        // Handle success
-        Map<String, Object> documentData = response.getBody();
-        System.out.println(documentData);
-        documentData.keySet().removeIf(key -> key.startsWith("$"));
-        return objectMapper.convertValue(documentData, getEntityClass());
-    } catch (HttpClientErrorException e) {
-        // Client-side error (4xx)
-        System.err.println("Client error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-        throw e;
-    } catch (HttpServerErrorException e) {
-        // Server-side error (5xx)
-        System.err.println("Server error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-        throw e;
-    } catch (Exception e) {
-        // Other errors
-        System.err.println("Unknown error: " + e.getMessage());
-        throw e;
+        return enrollmentRepository.save(enrollment);
     }
+
+    @Override
+    public List<Enrollment> getAllEnrollments() {
+        return enrollmentRepository.findAll();
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByLearner(int learnerId) {
+        User learner = userRepository.findById(learnerId)
+            .orElseThrow(() -> new RuntimeException("Learner not found"));
+        return enrollmentRepository.findByLearner(learner);
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByCourse(int courseId) {
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new RuntimeException("Course not found"));
+        return enrollmentRepository.findByCourse(course);
+    }
+
+    @Override
+    public boolean isEnrolled(int learnerId, int courseId) {
+    User learner = userRepository.findById(learnerId)
+            .orElseThrow(() -> new RuntimeException("Learner not found"));
+    Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new RuntimeException("Course not found"));
+    return enrollmentRepository.existsByLearnerAndCourse(learner, course);
 }
-   public void deleteDocument(String id) {
-       HttpHeaders headers = buildHeaders();
-       HttpEntity<Void> request = new HttpEntity<>(headers);
-       restTemplate.exchange(
-               baseUrl + "/databases/" + databaseId + "/collections/" + getCollectionId() + "/documents/" + id,
-               HttpMethod.DELETE,
-               request,
-               Void.class
-       );
-   }
-   private HttpHeaders buildHeaders() {
-       HttpHeaders headers = new HttpHeaders();
-       headers.set("X-Appwrite-Project", projectId);
-       headers.set("X-Appwrite-Key", apiKey);
-       headers.setContentType(MediaType.APPLICATION_JSON);
-       return headers;
-   }
-}
-
-
-this is database structure
-courses
 
 
 
-Documents
-Attributes
-Indexes
-Activity
-Usage
-Settings
-Attributes
-
-Create attribute
-Key
-Type
-Default value
-title
-required
-string
-
--
-
-description
-required
-string
-
--
-
-created_at
-datetime
-
--
-
-level
-required
-string
-
--
-
-category_id
-relationship with category_id
-
--
-
-creator_id
-relationship with creator_id
-
--
-
-when i post http://localhost:8081/api/courses
-{
-    "title": "Java programming",
-    "description": "desc",
-    "level": "Beginner",
-    "creator_id": "68494c4a6d51e1783fea",
-    "category_id": "684824e45633a2ac1f0c"
     
+
+
 }
 
-it shows error  "{"message":"Invalid document structure: Unknown attribute: \"id\"","code":400,"type":"document_invalid_structure","version":"1.7.4"}"] with root cause
+
+
+Enrollment repository:
+package com.bartr.repository;
+
+import com.bartr.model.Course;
+import com.bartr.model.Enrollment;
+import com.bartr.model.User;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer> {
+    
+    boolean existsByLearnerAndCourse(User learner, Course course);
+
+    List<Enrollment> findByLearner(User learner);
+
+    List<Enrollment> findByCourse(Course course);
+
+}
