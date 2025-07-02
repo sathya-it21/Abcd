@@ -41,3 +41,16 @@ uploadToS3	@	course.service.ts:100
 uploadAllMedia	@	create-course-page.component.ts:207
 onSubmit	@	create-course-page.component.ts:283
 CreateCoursePageComponent_Template_form_ngSubmit_18_listener	@	create-course-page.component.html:26
+
+
+
+
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+    "AllowedOrigins": ["http://localhost:4200", "https://yourdomain.com"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
+  }
+]
