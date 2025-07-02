@@ -1,36 +1,43 @@
-onSubmit(): void {
-  if (!this.newCourse.title || this.newCourse.title.trim() === '') {
-    this.toastr.showError('Course title cannot be empty.');
-    this.currentStep = 1;
-    return;
-  }
-
-  if (this.currentStep === 2 && !this.newCourse.courseVideo) {
-    this.toastr.showError('Please upload the main course video.');
-    return;
-  }
-
-  // Upload to S3 first
-  this.uploadAllMedia().then(() => {
-    // Prepare course object for backend
-    const coursePayload = {
-      title: this.newCourse.title,
-      description: this.newCourse.description,
-      level: this.newCourse.level,
-      features: this.newCourse.features.join(","),
-      courseOutLine: this.newCourse.courseContent,
-      imageUrl: this.course.imageUrl,
-      videoUrl: this.course.videoUrl,
-      category: { name: this.newCourse.category },  // assuming your backend accepts category name
-      creator: { id: this.course.creator.id }
-    };
-
-    this.courseService.insertCourse(coursePayload); // your service already logs success
-    this.createdCourseTitle = this.newCourse.title;
-    this.showCourseCreationSuccessModal = true;
-
-  }).catch((err) => {
-    console.error('Upload error:', err);
-    this.toastr.showError('File upload failed. ' + (err?.message || ''));
-  });
-}
+create-course-page.component.ts:301 
+ Upload error: 
+HttpErrorResponse {headers: _HttpHeaders, status: 200, statusText: 'OK', url: 'http://localhost:4200/api/s3/generate-presigned?fi…438717915_0_image%20(2).png&contentType=image/png', ok: false, …}
+error
+: 
+{error: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON at JSON.parse (<anonymous>…, text: '<!DOCTYPE html><html lang="en"><head>\n  \x3Cscript ty…:"c2104709656","r":1}]}}]}\x3C/script></body></html>'}
+headers
+: 
+_HttpHeaders {headers: undefined, normalizedNames: Map(0), lazyUpdate: null, lazyInit: ƒ}
+message
+: 
+"Http failure during parsing for http://localhost:4200/api/s3/generate-presigned?fileName=image/1751438717915_0_image%20(2).png&contentType=image/png"
+name
+: 
+"HttpErrorResponse"
+ok
+: 
+false
+status
+: 
+200
+statusText
+: 
+"OK"
+type
+: 
+undefined
+url
+: 
+"http://localhost:4200/api/s3/generate-presigned?fileName=image/1751438717915_0_image%20(2).png&contentType=image/png"
+[[Prototype]]
+: 
+HttpResponseBase
+(anonymous)	@	create-course-page.component.ts:301
+Zone - Promise.then		
+error	@	course.service.ts:112
+Zone - XMLHttpRequest.addEventListener:load		
+(anonymous)	@	course.service.ts:103
+uploadToS3	@	course.service.ts:100
+(anonymous)	@	create-course-page.component.ts:209
+uploadAllMedia	@	create-course-page.component.ts:207
+onSubmit	@	create-course-page.component.ts:283
+CreateCoursePageComponent_Template_form_ngSubmit_18_listener	@	create-course-page.component.html:26
