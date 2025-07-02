@@ -1,47 +1,7 @@
-package com.bartr.service.impl;
-
-import com.bartr.service.PresignedUrlService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-
-import java.time.Duration;
-
-@Service
-public class PresignedUrlServiceImpl implements PresignedUrlService {
-
-    @Value("${aws.accessKey}")
-    private String accessKey;
-    @Value("${aws.secretKey}")
-    private String secretKey;
-    @Value("${aws.bucketName}")
-    private String bucketName;
-    @Value("${aws.region}")
-    private String region;
-
-    public String generatePresignedUrl(String fileName, String contentType) {
-        AwsBasicCredentials creds = AwsBasicCredentials.create(accessKey, secretKey);
-        S3Presigner presigner = S3Presigner.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(creds))
-                .build();
-
-        PutObjectRequest por = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .contentType(contentType)
-                .build();
-
-        PresignedPutObjectRequest preq = presigner.presignPutObject(b ->
-                b.signatureDuration(Duration.ofMinutes(10))
-                        .putObjectRequest(por)
-        );
-        presigner.close();
-        return preq.url().toString();
-    }
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+    <Code>AccessDenied</Code>
+    <Message>User: arn:aws:iam::691879165105:user/2401600 is not authorized to perform: s3:PutObject on resource: "arn:aws:s3:::bartr-course/image/1751449002662_0_image (2).png" with an explicit deny in an identity-based policy</Message>
+    <RequestId>Y8MCQBQNVGFPZMQF</RequestId>
+    <HostId>SkkwWrtOf4c/4NGWMa40TpOmVzDR/+R76nD8tCVg8nRwl7DWVawazQMFA7jIVNwGd+etGBrjXKE5LUfKNahGYA==</HostId>
+</Error>
