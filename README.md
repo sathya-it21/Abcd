@@ -1,1 +1,26 @@
-Access to XMLHttpRequest at 'https://barter-course.s3.us-west-2.amazonaws.com/image/1751440314316_0_Screenshot%20%2877%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250702T071155Z&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Credential=AKIA2CFZWHSYQWBUJHCH%2F20250702%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Expires=600&X-Amz-Signature=7c115c95f604d441dd7be9fe9f64536ad599d61eab7528a5badf66ce95711cb7' from origin 'http://localhost:4200' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+
+
+uploadToS3(file: File, filePath: string): Promise<string> {
+    const contentType = file.type;
+    let headers = new HttpHeaders();
+    headers= headers.set('Authorization', `Bearer ${localStorage.getItem('token')}`);
+    let params = new HttpParams();
+    params = params.append('fileName', filePath.toString());
+    params = params.append('contentType', file.type.toString());
+
+    return new Promise((resolve, reject) => {
+      this.http.get<{ presignedUrl: string, publicUrl: string }>(
+        `${api.url}/api/s3/generate-presigned`,{headers:headers,params:params}
+      ).subscribe({
+        next: (response) => {
+          this.http.put(response.presignedUrl, file, {
+            headers: { 'Content-Type': contentType }
+          }).subscribe({
+            next: () => resolve(response.publicUrl),
+            error: (err) => reject(err)
+          });
+        },
+        error: (err) => reject(err)
+      });
+    });
+  }
