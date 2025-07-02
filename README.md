@@ -1,277 +1,207 @@
-import { FormsModule } from '@angular/forms';
-import { Component, NgModule, OnInit } from '@angular/core'; // NgModule is usually in app.module.ts, remove if standalone
-import { NavbarComponentComponent } from "../navbar-component/navbar-component.component";
-import { NgFor, NgIf } from '@angular/common'; // Already imported by standalone
-import { Router } from '@angular/router';
-import { GenericSuccessModalComponent } from "../generic-success-modal/generic-success-modal.component";
-import { Courses,Category,User } from '../types';
-import { CourseService } from '../services/course.service';
-import { CategoryService } from '../services/category.service';
-import { UserService } from '../services/user.service';
-import { ToastrService } from '../toastr/toastr.service';
+Great — let’s integrate everything together using **Option 2** (pre-signed uploads to S3), and store images as a **comma-separated string** in MySQL.
 
-interface Course {
-  title: string;
-  description: string;
-  category: string;
-  // xpPrice: number; // Keeping commented out as per your code
-  courseImages: File[];
-  level: string;
-  features: string[]; // Array of strings for features
-  courseContent: string; // Placeholder for content, could be richer in a real app
-  courseVideo: File | null;
+---
+
+## ✅ 1. Spring Boot Backend
+
+### 📦 `application.properties`
+
+```properties
+aws.accessKey=${AWS_ACCESS_KEY}
+aws.secretKey=${AWS_SECRET_KEY}
+aws.bucketName=barter-courses-bucket
+aws.region=ap-south-1
+spring.datasource.url=jdbc:mysql://…/yourdb
+spring.datasource.username=…
+spring.datasource.password=…
+```
+
+### 🔧 Add AWS SDK Dependency (pom.xml)
+
+```xml
+<dependency>
+  <groupId>software.amazon.awssdk</groupId>
+  <artifactId>s3</artifactId>
+</dependency>
+```
+
+### 🧩 Presigned URL Service
+
+```java
+@Service
+public class PresignedUrlService {
+  @Value("${aws.accessKey}") private String accessKey;
+  @Value("${aws.secretKey}") private String secretKey;
+  @Value("${aws.bucketName}") private String bucketName;
+  @Value("${aws.region}") private String region;
+
+  public String generatePresignedUrl(String fileName, String contentType) {
+    AwsBasicCredentials creds = AwsBasicCredentials.create(accessKey, secretKey);
+    S3Presigner presigner = S3Presigner.builder()
+      .region(Region.of(region))
+      .credentialsProvider(StaticCredentialsProvider.create(creds))
+      .build();
+
+    PutObjectRequest por = PutObjectRequest.builder()
+      .bucket(bucketName)
+      .key(fileName)
+      .contentType(contentType)
+      .build();
+
+    PresignedPutObjectRequest preq = presigner.presignPutObject(b -> 
+      b.signatureDuration(Duration.ofMinutes(10))
+       .putObjectRequest(por)
+    );
+    presigner.close();
+    return preq.url().toString();
+  }
+}
+```
+
+### 🌐 S3 Controller
+
+```java
+@RestController
+@RequestMapping("/api/s3")
+public class S3Controller {
+  private final PresignedUrlService presigner;
+  @Value("${aws.bucketName}") private String bucketName;
+  @Value("${aws.region}") private String region;
+
+  public S3Controller(PresignedUrlService presigner) {
+    this.presigner = presigner;
+  }
+
+  @GetMapping("/generate-presigned")
+  public ResponseEntity<?> getPresigned(
+    @RequestParam String fileName,
+    @RequestParam String contentType) {
+    String url = presigner.generatePresignedUrl(fileName, contentType);
+    String publicUrl = String.format("https://%s.s3.%s.amazonaws.com/%s",
+        bucketName, region, fileName);
+    return ResponseEntity.ok(Map.of("presignedUrl", url, "publicUrl", publicUrl));
+  }
+}
+```
+
+---
+
+### 🗄️ Course Entity & Repository
+
+```java
+@Entity
+public class Course {
+  @Id @GeneratedValue(strategy=IDENTITY)
+  private Long id;
+  private String title;
+  private String description;
+  private String level;
+  private String features; // comma-separated
+  private String courseOutLine;
+  private String imageUrls; // comma-separated URLs
+  private String videoUrl;
+  private Long creatorId;
+  private Long categoryId;
+  // getters + setters
 }
 
-@Component({
-  selector: 'app-create-course-page',
-  // If this is a standalone component, you don't need @NgModule decorator here.
-  // The 'imports' array within @Component is for standalone components.
-  // If it's part of a module, the 'imports' here should be in the module's @NgModule.
-  // Assuming it's standalone based on recent Angular conventions.
-  standalone: true, // Add this if it's not already defined elsewhere (e.g., in module file if not standalone)
-  imports: [NavbarComponentComponent, NgIf, NgFor, FormsModule, GenericSuccessModalComponent],
-  templateUrl: './create-course-page.component.html',
-  styleUrl: './create-course-page.component.css'
-})
-export class CreateCoursePageComponent implements OnInit{
+public interface CourseRepository extends JpaRepository<Course,Long> { }
+```
 
-  currentStep: number = 1;
+### 🛠️ Course Controller
 
-  newCourse: Course = {
-    title: '',
-    description: '',
-    category: '', // Default empty
-    // xpPrice: 0, // Keeping commented out as per your code
-    level: '',
-    courseImages: [],
-    features: [''], // Start with one empty field
-    courseContent: '',
-    courseVideo: null
+```java
+@RestController
+@RequestMapping("/api/courses")
+public class CourseController {
+  private final CourseRepository repo;
+  public CourseController(CourseRepository repo){ this.repo = repo; }
+
+  @PostMapping("/insertCourse")
+  public ResponseEntity<?> createCourse(@RequestBody Course course) {
+    repo.save(course);
+    return ResponseEntity.ok(Map.of("message","Course saved"));
+  }
+}
+```
+
+---
+
+## ✅ 2. Angular Frontend Enhancements
+
+### 🛠️ Upload Files & Collect URLs
+
+Adapt your existing upload logic to get both `presignedUrl` and `publicUrl`:
+
+```ts
+uploadToS3(file: File, filePath: string) {
+  const ct = file.type;
+  this.http.get<{presignedUrl:string, publicUrl:string}>(
+    `/api/s3/generate-presigned?fileName=${filePath}&contentType=${ct}`
+  ).subscribe(resp => {
+    this.http.put(resp.presignedUrl, file, { headers: {'Content-Type': ct} })
+      .subscribe(() => {
+        this.uploadedPublicUrls.push(resp.publicUrl);
+      });
+  });
+}
+```
+
+### 📝 Modify `createCourse()` to send comma-separated strings
+
+```ts
+createCourse() {
+  const imagesCsv = this.uploadedPublicUrls
+    .filter(url => url.includes('/image/'))
+    .join(',');
+
+  const videoUrl = this.uploadedPublicUrls
+    .find(url => url.includes('/video/')) || '';
+
+  const payload = {
+    title: this.course.title,
+    description: this.course.description,
+    level: this.course.level,
+    features: this.course.features.join(','),       // csv
+    courseOutLine: this.course.courseOutLine,
+    imageUrls: imagesCsv,
+    videoUrl: videoUrl,
+    creatorId: this.course.creator.id,
+    categoryId: this.course.category.id
   };
-  course:Courses={
-    id: 0,
-    title: '',
-    description: '',
-    level: '',
-    features: [],
-    courseOutLine: '',
-    price: 0,
-    imageUrl: '',
-    videoUrl: '',
-    enrolledUser: 0,
-    category: {
-      id: 0
-    },
-    creator: {
-      id: 0,
-      username: '',
-      skills: ''
-    }
-  }
-  categories: string[] = [
-    'Information Technology',
-    'Music',
-    'Language',
-    'Drawing',
-  ];
 
-  level: string[] = [
-    'Beginner',
-    'Intermediate',
-    'Advanced'
-  ];
-
-  // <--- NEW: Property to control success modal visibility
-  showCourseCreationSuccessModal: boolean = false;
-  createdCourseTitle: string = '';
-   // To pass to the modal
-
-  constructor(private router: Router,
-              private courseService:CourseService,
-              private categoryService:CategoryService,
-              private userService:UserService,
-              private toastr: ToastrService,
-            ) {}
-  ngOnInit(): void {
-    this.categories=this.categoryService.getCategoryNames();
-    console.log(this.categories);
-    this.userService.getByUserName(localStorage.getItem('username')||'').subscribe({
-      next: (userData: User) => {
-        this.course.creator.id = userData.id;
-      }
-    });
-  }
-
-
-
-
-  // === NEW: trackBy function for ngFor ===
-  trackByFeature(index: number, feature: string): number {
-    return index; // Uniquely identifies each item by its index
-  }
-
-  // === Step Navigation Methods ===
-  goToNextStep(): void {
-    // Validate current step before moving to the next
-    if (this.currentStep === 1) {
-      // Adjusted validation based on your provided interface and common sense for required fields
-      if (!this.course.title || !this.course.description || !this.course.category || !this.course.level || !this.course.courseOutLine) {
-        // alert('Please fill in all required fields for Basic Details (Title, Description, Category, Level, Course Content Outline).');
-        this.toastr.showError('Please fill in all required fields for Basic Details (Title, Description, Category, Level, Course Content Outline).')
-        return;
-      }
-      if (this.course.features.some(f => !f || f.trim() === '')) {
-        //  alert('Please ensure all course features are filled or remove empty ones.');
-         this.toastr.showError('Please ensure all course features are filled or remove empty ones.');
-         return;
-      }
-      if (this.newCourse.courseImages.length === 0) {
-        // alert('Please upload at least one course image.');
-        this.toastr.showError('Please upload at least one course image.');
-        return;
-      }
-    }
-    this.currentStep++;
-  }
-
-  goToPreviousStep(): void {
-    this.currentStep--;
-  }
-
-  onVideoSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      if (file.type.startsWith('video/')) {
-        this.newCourse.courseVideo = file;
-        console.log('Selected video:', this.newCourse.courseVideo.name);
-      } else {
-        // alert('Only video files are allowed.');
-        this.toastr.showError('Only video files are allowed.');
-        this.newCourse.courseVideo = null;
-        input.value = ''; // Clear the input if not a video
-      }
-    } else {
-      this.newCourse.courseVideo = null;
-    }
-  }
-
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.newCourse.courseImages = []; // Clear existing images on new selection
-      // Add up to 4 selected files to the array
-      for (let i = 0; i < input.files.length && i < 4; i++) {
-        const file = input.files[i];
-        if (file.type.startsWith('image/')) {
-            this.newCourse.courseImages.push(file); // Store File object
-        } else {
-            // alert(`File "${file.name}" is not an image and will be skipped.`);
-            this.toastr.showError(`File "${file.name}" is not an image and will be skipped.`)
-        }
-      }
-      console.log('Selected images:', this.newCourse.courseImages.map(f => f.name));
-      // No need to clear input.value if you want to display selected file names and manage them.
-      // If you want to force re-selection: input.value = '';
-    }
-  }
-
-  // Remove a specific image by its index
-  removeImage(index: number): void {
-    if (index > -1 && index < this.newCourse.courseImages.length) {
-      this.newCourse.courseImages.splice(index, 1);
-    }
-  }
-
-  // Add a new feature field
-  addFeatures(): void {
-    if (this.newCourse.features.length < 6) { // Limit to 6 features as an example
-      this.newCourse.features.push('');
-    } else {
-        // alert('You can add a maximum of 6 features.');
-        this.toastr.showError('You can add a maximum of 6 features.')
-    }
-  }
-
-  // Remove a feature field
-  removeFeatures(index: number): void {
-    if (this.newCourse.features.length > 1) { // Ensure at least one feature input remains
-      this.newCourse.features.splice(index, 1);
-    }
-  }
-
-  // Handle course submission
-  onSubmit(): void {
-
-    if (!this.course.title || this.course.title.trim() === '') {
-      // alert('Course title cannot be empty.');
-      this.toastr.showError('Course title cannot be empty.')
-      this.currentStep = 1; // Go back to step 1
-      return;
-    }
-
-    // Final validation for Step 2
-    if (this.currentStep === 2) {
-      if (!this.newCourse.courseVideo) {
-        // alert('Please upload the main course video.');
-        this.toastr.showError('Please upload the main course video.');
-        return;
-      }
-    }
-    console.log(this.course);
-    this.courseService.insertCourse(this.course);
-    console.log('New Course Data:', this.newCourse);
-
-    // Simulate API call for course creation
-    // In a real application, you would send this.newCourse to your backend service
-    // e.g., this.courseService.createCourse(this.newCourse).subscribe(...)
-
-    // alert('Course created successfully! (Simulated)'); // This alert will now be replaced by the modal.
-
-    // --- MODIFIED SECTION ---
-    // Capture the title for the modal message before resetting
-    this.createdCourseTitle = this.course.title;
-
-    // Show the success modal
-    this.showCourseCreationSuccessModal = true;
-
-    // DO NOT reset form here. Reset happens when modal is closed.
-    // this.newCourse = { ... };
-    // this.currentStep = 1;
-  }
-
-  // <--- NEW / MODIFIED: Handlers for Course Creation Success Modal ---
-  onCourseCreationModalClose(): void {
-    console.log('Course creation success modal closed.');
-    this.showCourseCreationSuccessModal = false; // Close the modal
-    this.resetForm(); // Reset form when modal is explicitly closed
-    // Optionally navigate or refresh data here if not handled by primary action
-  }
-
-  onViewCreatedCourse(): void {
-    console.log('Primary action from Course Creation Success Modal: Navigating to My Courses.');
-    this.showCourseCreationSuccessModal = false; // Close the modal
-    this.resetForm(); // Reset form when modal primary action is taken
-    // Example navigation to the user's "My Courses" section
-    this.router.navigate(['/profile'], { queryParams: { tab: 'My Courses' } });
-  }
-
-  // New utility method to reset the form state
-  resetForm(): void {
-    this.newCourse = {
-      title: '',
-      description: '',
-      category: '',
-      // xpPrice: 0,
-      level: '',
-      courseImages: [],
-      features: [''], // Reset with one empty feature
-      courseContent: '',
-      courseVideo: null
-    };
-    this.currentStep = 1; // Reset to the first step
-    this.createdCourseTitle = ''; // Clear the captured title
-  }
+  this.http.post(`${api.url}/courses/insertCourse`, payload, {
+    headers: { Authorization:`Bearer ${localStorage.getItem('token')}` }
+  }).subscribe({
+    next: () => this.showCourseCreationSuccessModal = true,
+    error: () => this.toastr.showError('Failed to create course')
+  });
 }
+```
 
+---
 
+## 🔚 Summary Flow
+
+| Step | Description                                                   |
+| ---- | ------------------------------------------------------------- |
+| 1    | User selects images + video                                   |
+| 2    | Angular requests pre-signed URLs from Spring Boot             |
+| 3    | Angular uploads files directly to S3                          |
+| 4    | Angular constructs comma-separated public URLs string         |
+| 5    | Angular posts final course form (with CSV strings) to backend |
+| 6    | Spring Boot saves a **single-string** list in the DB          |
+
+---
+
+## ✅ Next Steps
+
+* ✅ Add validation & error-handling (size/type limits)
+* ✅ Add CORS policy for `api/s3`
+* ✅ Secure bucket (private) and generate pre-signed GET URLs for video/image access later
+
+Let me know if you'd like me to add:
+
+* retrieval endpoints to split CSV fields,
+* presigned GET URLs for private media,
+* or examples for displaying comma-separated images properly!
