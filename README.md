@@ -1,165 +1,173 @@
-Facility Intial Credentialing: 
+Sure! Here's your facility recredentialing process formatted into a clear, structured document with sections, bullet points, and step-by-step instructions:
 
-The following steps are to be followed to complete the facility initial credentialing process.  
+---
 
-The task starts with the Credentialing Supervisor, then will be assigned to a Credentialing Specialist 
+# **Facility Recredentialing Process**
 
-Credentialing Supervisor's Steps 
+This process is completed when cases are assigned to a **PRED Specialist** for facilities that require **recredentialing**. This is applicable to cases **without paid verification**.
 
-Log in to TrueProvider. 
+---
 
-From the My Work Items page, click the Case ID for the corresponding record, which will be in a Preliminary Approval Pending status. 
+## **1. Logging into TrueProvisor and Batch File Upload**
 
-Click the Action button and select Checklist. The initial verification checklist will be automatically added to the record. 
+1. Log in to **TrueProvisor**.
+2. Navigate to **My Work Item → Batch File**.
+3. Click **Download Template**.
+4. Fill out the template in the provided format.
+5. Upload the completed document.
 
-Click the chevron icon to expand the checklist. Use this to guide you through the preliminary approval process. 
+---
 
-As each task is executed, click the Verify button. 
+## **2. Assigning Records to Specialists**
 
-Once the review process and checklist are complete, return to the worklist by clicking the Save and Exit button. 
+1. Locate the **Ready for Recredentialing** record.
+2. Click the **ellipsis/menu icon → Assign To**.
+3. Select the appropriate **user**.
+4. Click **Assign**.
+5. The record will appear in the **Credentialing Specialist’s My Work Items** page.
+6. Click the **Case ID** corresponding to the record and assignment status.
 
-From the worklist, click the ellipsis icon next to the appropriate line item and choose either Approve or Deny. 
+> **Note:** Ensure your work list is filtered on **Organizations** for facility records.
 
-Enter the appropriate approval or denial comments and click Approve or Deny. 
+---
 
-If denied, the record will be routed back to the PNM team for corrections. Once corrected, the review process will repeat. 
+## **3. Using the Checklist**
 
-If approved, the record will move to a Ready for Credentialing status and can be assigned to a specialist. 
+1. Click **Action → Checklist**.
+2. The **Recred Application Checklist** is automatically added to the record as **Ready for Credentialing**.
+3. Expand the checklist and use it to guide **data review and validation**.
+4. Click **Complete** for each executed task.
 
-Locate the ready for credentialing record and click the ellipsis icon, then select Assign to. 
+---
 
-Select the appropriate Credentialing Specialist and click the Assign button. 
+## **4. Verifying and Updating Information**
 
-Shape 
+### **4.1 Organization Info**
 
-Credentialing Specialist's Steps 
+* Organization Name
+* Organization Type
+* Facility Type
+* Participating Brand
 
-From the My Work Items page, click the Case ID for the corresponding record, which will be in the Assigned status. 
+### **4.2 Location**
 
-Note: To find facility records, ensure your worklist is filtered by "Organization." 
+1. Click **Location tab → Edit icon**.
+2. Verify/update mandatory fields:
 
-Click the Action button and select Checklist. The initial application checklist will be automatically added to the record. 
+   * Tax ID
+   * Location Type
+   * Service Address
+   * Service Contact Information
+   * Location Status
+   * Contract
+   * Category of Service
+   * Access Type
 
-Click the chevron icon to expand the checklist. Use this to guide you through the data review and validation process. 
+### **4.3 Specialty**
 
-As each task is executed, click the Complete button. 
+* Certificate Type
+* Specialty
+* Verified Date
 
-Click the Organization Info tab and verify or update the mandatory information: 
+### **4.4 Accreditation**
 
-Organization Name 
+* Certificate Number
+* Agency
+* Regulatory Agency
+* Is Regulatory Agency Survey Completed?
+* Effective Date
+* Expiration Date
+* Accreditation Level
+* Rating
 
-Organization Type 
+### **4.5 License**
 
-Facility Type 
+* License Type
+* License Number
+* Status
+* Expiration Date
+* Verified Date
 
-Participating Brand 
+### **4.6 Contact**
 
-Click the Location tab and then click the edit icon next to the location to be verified. 
+* Contact Info
+* Contact Name
+* Department
+* Primary Address
 
-Click the Location Information tab and verify or update the mandatory information: 
+### **4.7 Insurance**
 
-Tax ID 
+* Type
+* Insurance
+* Policy Number
+* Status
+* End Date
+* Verified Date
+* Coverage
 
-Location Type 
+### **4.8 Service Codes**
 
-Service Address 
+* Verify/update mandatory **Service Code** information
 
-Note: Other fields not included in the original image include: Service Contact Information, Location Status, Delegated Location, Contract, Category of Service, and Access Type. 
+---
 
-Click the Specialty tab and verify or update the mandatory information: 
+## **5. Uploading Documents**
 
-Type 
+1. Click **Action → Documents → Credentialing Documents folder**.
+2. Click **Upload Document → Browse File** to select files.
+3. Click **Upload** to save documents.
 
-Specialty 
+---
 
-Verified Date 
+## **6. Submitting Record for Approval**
 
-Click the Accreditation tab and verify or update the mandatory information: 
+1. Once review, checklist, and document upload are complete:
 
-Certificate Number 
+   * Go to **Others tab → Submit Case**.
+2. The system will notify if **any information is incomplete**.
+3. Submitting moves the record to **Complete** status and routes it to the **Credentialing Supervisor** for approval.
 
-Agency 
+---
 
-Regulatory Agency 
+## **7. Credentialing Supervisor Actions**
 
-Is regulatory agency survey completed? 
+1. Records appear in the **Completed status** on the supervisor’s work list.
+2. Click **ellipsis icon → Export to CRC**.
 
-Effective Date 
+   * Downloads an Excel file to send to **CRC**.
+   * Changes record status to **Send to CRC**.
+3. Once approval is received from CRC, manually generate the **Reappointment Letter**.
 
-Expiration Date 
+### **7.1 Generating Reappointment Letters**
 
-Accreditation Level 
+1. Open the appropriate case.
+2. Click **Action → Letters**.
+3. Search for the appropriate **letter template**.
+4. Preview letter: **Preview button**.
+5. Edit provider-specific data points: **Edit Letter → Update → Save and Generate**.
 
-Rating 
+   * Template itself **cannot be edited**.
+6. Send the letter: **Send Letter button**.
 
-Click the Contact tab and verify or update the mandatory information: 
+   * Letter automatically saved in **Credentialing Documents folder**.
 
-Contact Info 
+---
 
-Contact Name 
+## **8. Reporting**
 
-Department 
+1. Click **Reports** at the top of the screen.
+2. Search for **Record Ready for CRC report**.
+3. Enter applicable **report filter criteria**.
+4. Click **Generate Report**.
 
-Primary Address 
+---
 
-Click the License tab and verify or update the mandatory information: 
+## **9. Completion**
 
-License Type 
+* The facility recredentialing process is now complete.
 
-License Number 
+---
 
-Expiration Date 
+If you want, I can also **combine this with the previous MAS update/opt-in process** into a **single comprehensive provider/facility operations manual**, which would be very handy for training or reference.
 
-Verified Date 
-
-Status 
-
-Click the Insurance tab and verify or update the mandatory information: 
-
-Type 
-
-Policy Number 
-
-Status 
-
-End Date 
-
-Verified Date 
-
-Coverage 
-
-Verify or update at least the mandatory Service Code information. As needed, reach out to the facility for any missing information. 
-
-Click the Action button and select Documents. 
-
-Select the Credentialing Documents folder. 
-
-Click the Upload Document button, browse for the appropriate file, and click Upload. 
-
-Once the review, checklists, and document uploads are complete, the specialist can submit the record for approval. 
-
-Return to the provider record and click the Others tab. 
-
-Click the Submit Case button at the bottom of the screen. The system will notify you if there is any incomplete information. 
-
-Submitting the case moves the record to a Completed status and routes it to the Credentialing Supervisor's worklist for approval. 
-
-Post-Approval Steps 
-
-Click the ellipsis icon to open the menu and click Export to CRC. This will download an Excel file for the Credentialing Review Committee (CRC) and change the record status to Sent to CRC. 
-
-Once an approval decision is received from the CRC, the credentialing team must manually generate the welcome letter. 
-
-Open the appropriate case. Click the Action button and select Letters. 
-
-Find the appropriate letter template using the search fields or filter tiles. 
-
-To preview the template, click the Preview Letter button. 
-
-To edit data points within the letter, click the Edit Letter button, update necessary information, and click Save and Generate. 
-
-Note: This feature allows you to edit provider-specific data points, not the letter template itself. 
-
-To send the selected letter, click the Send Letter button. The system will automatically save the letter in the Credentialing Documents folder for you to access and distribute. 
-
- 
+Do you want me to do that?
