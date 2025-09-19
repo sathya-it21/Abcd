@@ -1,137 +1,165 @@
-Absolutely! Here’s your content formatted into a clear, structured document for easy reference. I’ve organized it into sections with headings, bullet points, and step-by-step instructions.
+Facility Intial Credentialing: 
 
----
+The following steps are to be followed to complete the facility initial credentialing process.  
 
-# **Provider Opt-In/Opt-Out and MAS Updates Process**
+The task starts with the Credentialing Supervisor, then will be assigned to a Credentialing Specialist 
 
-## **1. Overview**
+Credentialing Supervisor's Steps 
 
-This process is performed when a provider requests to **opt out** or **opt into** a product or line of business in any or all brands under **Emblem Health**. Updates can be made **individually** or in **mass**.
+Log in to TrueProvider. 
 
-* All requests are sent to the **PFO** via the following mailboxes:
+From the My Work Items page, click the Case ID for the corresponding record, which will be in a Preliminary Approval Pending status. 
 
-  * [providermodifications@emblemhealth.com](mailto:providermodifications@emblemhealth.com)
-  * [provideroperations@emblemhealth.com](mailto:provideroperations@emblemhealth.com)
-  * [providerfileoperations@connecticare.com](mailto:providerfileoperations@connecticare.com)
-  * [hmoppocpfhcsupdate@emblemhealth.com](mailto:hmoppocpfhcsupdate@emblemhealth.com)
+Click the Action button and select Checklist. The initial verification checklist will be automatically added to the record. 
 
-* PFO follows specific processes based on the **email subject line**:
+Click the chevron icon to expand the checklist. Use this to guide you through the preliminary approval process. 
 
-  * Subject should include: `opt out` or `opt in`, **provider name**, and **license number**.
-  * If subject line contains **STAT** or **DOH**, escalate to **priority processing**.
-  * Otherwise, process the **oldest request** in the queue.
+As each task is executed, click the Verify button. 
 
-### **Important Reminders**
+Once the review process and checklist are complete, return to the worklist by clicking the Save and Exit button. 
 
-* Do **not retroactively opt out** providers. Use the date of implementation or a future date.
-* For **HIP and GHI HMO**, providers **cannot opt out** of commercial LOVs.
-* For **GHI PPO**, providers **cannot opt out** of CBP. Doing so is considered a termination.
+From the worklist, click the ellipsis icon next to the appropriate line item and choose either Approve or Deny. 
 
----
+Enter the appropriate approval or denial comments and click Approve or Deny. 
 
-## **2. MAS Updates Process (Mass Updates)**
+If denied, the record will be routed back to the PNM team for corrections. Once corrected, the review process will repeat. 
 
-### **Step 1: Logging into TrueProvider**
+If approved, the record will move to a Ready for Credentialing status and can be assigned to a specialist. 
 
-1. Click **Provider Management** tab.
-2. On the **Provider Management page**, click **MAS Updates** tab.
+Locate the ready for credentialing record and click the ellipsis icon, then select Assign to. 
 
-### **Step 2: Download MAS Update Template**
+Select the appropriate Credentialing Specialist and click the Assign button. 
 
-1. Click the **Download** button next to **Network Updates**.
-2. File will download in **CSV format** (do **not** change the format).
-3. Open the file and complete **all required data points**.
-4. Save the file for uploading to TrueProvider.
+Shape 
 
-> Note: A separate tab in the template provides guidance for completing the template.
+Credentialing Specialist's Steps 
 
-### **Step 3: Upload MAS Updates**
+From the My Work Items page, click the Case ID for the corresponding record, which will be in the Assigned status. 
 
-1. Return to the **MAS Updates** screen in TrueProvider.
-2. Click **Network Updates**.
-3. Click **Run Now**.
-4. Click **Browse** and upload the updated file.
-5. Click **Upload** to run the updates.
-6. Review **success, error, and warning messages**:
+Note: To find facility records, ensure your worklist is filtered by "Organization." 
 
-   * Correct any errors manually in TrueProvider.
-   * Download the **output sheet** via **Export To** for detailed line-wise information.
-7. **MAS Update Member Move**: Always default to **No Scenario**.
-8. **Reform Audit** is required for success records.
+Click the Action button and select Checklist. The initial application checklist will be automatically added to the record. 
 
----
+Click the chevron icon to expand the checklist. Use this to guide you through the data review and validation process. 
 
-## **3. Individual Provider Opt-In/Opt-Out Updates**
+As each task is executed, click the Complete button. 
 
-### **Step 1: Accessing Records**
+Click the Organization Info tab and verify or update the mandatory information: 
 
-* If the record is assigned to you, it appears in **Dashboard → Work List**.
-* If not assigned:
+Organization Name 
 
-  1. Click **Provider Management**.
-  2. Use **Provider Search** with at least two parameters.
-  3. Click **Menu/Ellipsis → Assign to** → Select PFO Specialist → **Assign**.
+Organization Type 
 
-### **Step 2: Editing Provider Profile**
+Facility Type 
 
-1. In **Dashboard**, click **Profile ID** to open the record.
-2. Click **Edit Profile** → **Practice Location tab**.
-3. Click **Edit** icon next to the location.
-4. Click **Network tab**.
+Participating Brand 
 
-### **Step 3: Opting Into a Network**
+Click the Location tab and then click the edit icon next to the location to be verified. 
 
-1. Click **Add Network**.
-2. Enter **mandatory fields**:
+Click the Location Information tab and verify or update the mandatory information: 
 
-   * Network ID, Network Prefix, Tax ID
-   * Start Date, End Date, Agreement ID
-   * Provider Type, Suppress Online Directory
-   * Gender Limitation, Age Range, Panel
-3. Click **Save**.
+Tax ID 
 
-### **Step 4: Opting Out of a Network**
+Location Type 
 
-1. Click **Edit** icon next to the network.
-2. Terminate network by updating the **End Date** (follow **60-day rule**).
-3. Click **Save**.
+Service Address 
 
-> **PCP Member Move:**
->
-> * If the terminated network was a **Primary Care Physician (PCP)** with members assigned, a member move is required.
-> * TrueProvider may prompt you for manual execution or automatically execute using business rules.
-> * **CAP PCP** providers: Always select **Yes** and provide **TO Provider** details.
-> * Specialists: Pop-up will not appear.
+Note: Other fields not included in the original image include: Service Contact Information, Location Status, Delegated Location, Contract, Category of Service, and Access Type. 
 
-4. Enter **Profile ID** and select appropriate values:
+Click the Specialty tab and verify or update the mandatory information: 
 
-   * Location ID, Location County Code, Center ID, Tax ID, Notes
-5. Click **Move**.
-6. Member move audit occurs to approve executed moves. Data is then pushed to **Facets**.
+Type 
 
----
+Specialty 
 
-## **4. Adding Notes**
+Verified Date 
 
-1. Click **Action → Notes**.
-2. Click **Add Notes**.
-3. Enter notes and click **Save**.
+Click the Accreditation tab and verify or update the mandatory information: 
 
----
+Certificate Number 
 
-## **5. Completing Provider Setup**
+Agency 
 
-1. Click **Demographics tab**.
-2. Click **Complete Provider Setup** button.
+Regulatory Agency 
 
----
+Is regulatory agency survey completed? 
 
-### **End of Process**
+Effective Date 
 
-> Follow these steps carefully to ensure proper MAS updates and provider opt-in/opt-out actions are executed accurately.
+Expiration Date 
 
----
+Accreditation Level 
 
-If you want, I can also **create a visual flowchart version** of this process to make it **even easier to follow** step by step.
+Rating 
 
-Do you want me to do that?
+Click the Contact tab and verify or update the mandatory information: 
+
+Contact Info 
+
+Contact Name 
+
+Department 
+
+Primary Address 
+
+Click the License tab and verify or update the mandatory information: 
+
+License Type 
+
+License Number 
+
+Expiration Date 
+
+Verified Date 
+
+Status 
+
+Click the Insurance tab and verify or update the mandatory information: 
+
+Type 
+
+Policy Number 
+
+Status 
+
+End Date 
+
+Verified Date 
+
+Coverage 
+
+Verify or update at least the mandatory Service Code information. As needed, reach out to the facility for any missing information. 
+
+Click the Action button and select Documents. 
+
+Select the Credentialing Documents folder. 
+
+Click the Upload Document button, browse for the appropriate file, and click Upload. 
+
+Once the review, checklists, and document uploads are complete, the specialist can submit the record for approval. 
+
+Return to the provider record and click the Others tab. 
+
+Click the Submit Case button at the bottom of the screen. The system will notify you if there is any incomplete information. 
+
+Submitting the case moves the record to a Completed status and routes it to the Credentialing Supervisor's worklist for approval. 
+
+Post-Approval Steps 
+
+Click the ellipsis icon to open the menu and click Export to CRC. This will download an Excel file for the Credentialing Review Committee (CRC) and change the record status to Sent to CRC. 
+
+Once an approval decision is received from the CRC, the credentialing team must manually generate the welcome letter. 
+
+Open the appropriate case. Click the Action button and select Letters. 
+
+Find the appropriate letter template using the search fields or filter tiles. 
+
+To preview the template, click the Preview Letter button. 
+
+To edit data points within the letter, click the Edit Letter button, update necessary information, and click Save and Generate. 
+
+Note: This feature allows you to edit provider-specific data points, not the letter template itself. 
+
+To send the selected letter, click the Send Letter button. The system will automatically save the letter in the Credentialing Documents folder for you to access and distribute. 
+
+ 
